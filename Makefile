@@ -6,8 +6,11 @@ help: ## Display this help screen
 login_db: ## if need use pswd:
 	@psql -h localhost -U postgres
 
-start: ##
+start: ## start docker service
 	@docker compose -f docker-compose-NodleCode.yml up -d
+
+start_old: ## start docker service
+	@docker compose -f docker-compose-testnet.yml up -d
 
 
 
