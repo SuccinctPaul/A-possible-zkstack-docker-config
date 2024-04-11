@@ -1,9 +1,11 @@
 
 services:
-  postgres-explorer:
+  postgres:
     image: "postgres:14"
+    ports:
+      - "127.0.0.1:5432:5432"
     volumes:
-      - postgres-explorer:/var/lib/postgresql/data
+      - postgres:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
@@ -13,7 +15,9 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=block-explorer
+      - POSTGRES_HOST_AUTH_METHOD=trust
     restart: unless-stopped
+
   explorer-app:
     image: "matterlabs/block-explorer-app"
     ports:
@@ -30,7 +34,7 @@ services:
       - PORT=3001
       - LOG_LEVEL=verbose
       - NODE_ENV=development
-      - DATABASE_HOST=postgres-explorer
+      - DATABASE_HOST=postgres
       - DATABASE_USER=postgres
       - DATABASE_PASSWORD=postgres
       - DATABASE_NAME=block-explorer
@@ -50,7 +54,7 @@ services:
       - LOG_LEVEL=verbose
       - NODE_ENV=development
       - CONTRACT_VERIFICATION_API_URL=http://zkstack-apis:3070
-      - DATABASE_URL=postgres://postgres:postgres@postgres-explorer:5432/block-explorer
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/block-explorer
     ports:
       - '3020:3020'
     depends_on:
@@ -69,19 +73,6 @@ services:
       - '3040:3040'
     restart: unless-stopped
 
-  postgres-zksync:
-    image: postgres:14
-    ports:
-      - "127.0.0.1:5432:5432"
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    environment:
-      POSTGRES_PASSWORD: notsecurepassword
-      POSTGRES_HOST_AUTH_METHOD: trust
-
   zkstack-core:
     container_name: zkstack-core
     image: douglasacost/zk-testnet-nodle:latest
@@ -91,7 +82,7 @@ services:
         "tree,eth,state_keeper,housekeeper,proof_data_handler"
       ]
     depends_on:
-      postgres-zksync:
+      postgres:
         condition: service_healthy
       zk-postgres-setup:
         condition: service_completed_successfully
@@ -103,9 +94,10 @@ services:
       retries: 10
     env_file:
       - ./env/nodle-l2-testnet.env
+      - ./env/private_local.env
     environment:
-      DATABASE_URL: postgres://postgres@postgres-zksync/zksync_local
-      DATABASE_PROVER_URL: postgres://postgres:@postgres-zksync/prover_local
+      DATABASE_URL: postgres://postgres:postgres@postgres/zksync_local
+      DATABASE_PROVER_URL: postgres://postgres:postgres@postgres/prover_local
     ports:
       # assumes default ports in .env
       #- "3312:3312" # prometheus metrics # we need a separate metrics port for each component
@@ -118,7 +110,7 @@ services:
     depends_on:
       zkstack-core:
         condition: service_healthy
-      postgres-zksync:
+      postgres:
         condition: service_healthy
       zk-postgres-setup:
         condition: service_completed_successfully
@@ -126,9 +118,10 @@ services:
     command: [ "--components", "http_api,ws_api" ]
     env_file:
       - ./env/nodle-l2-testnet.env
+      - ./env/private_local.env
     environment:
       FRI_PROVER_GATEWAY_API_URL: http://zkstack-core:3320
-      DATABASE_URL: postgres://postgres:@postgres-zksync/zksync_local
+      DATABASE_URL: postgres://postgres:postgres@postgres/zksync_local
     ports:
       # assumes default ports in .env
       - "3071:3071" # health
@@ -141,20 +134,19 @@ services:
       context: .
       dockerfile: docker/Dockerfile.zk-postgres-setup
     depends_on:
-      postgres-zksync:
+      postgres:
         condition: service_healthy
     restart: on-failure
     env_file:
       - ./env/nodle-l2-testnet.env
+      - ./env/private_local.env
     environment:
-      DATABASE_URL: postgres://postgres:@postgres-zksync/zksync_local
-      DATABASE_PROVER_URL: postgres://postgres:@postgres-zksync/prover_local
+      DATABASE_URL: postgres://postgres:postgres@postgres/zksync_local
+      DATABASE_PROVER_URL: postgres://postgres:postgres@postgres/prover_local
     command: [ "db", "setup" ]
-
 
 
 volumes:
   zksync-data:
-  postgres-explorer:
-  postgres-zksync:
+  postgres:
 

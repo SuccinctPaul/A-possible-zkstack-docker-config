@@ -7,7 +7,7 @@ login_db: ## if need use pswd:
 	@psql -h localhost -U postgres
 
 start: ##
-	@docker compose -f docker-compose-NodleCode.yml up -d
+	@docker compose -f docker-compose-explorer.yml up -d
 
 
 start_zkstack: ##
