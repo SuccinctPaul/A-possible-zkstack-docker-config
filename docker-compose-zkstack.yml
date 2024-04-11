@@ -43,7 +43,7 @@ services:
       #- "3312:3312" # prometheus metrics # we need a separate metrics port for each component
       - "3320:3320" # proof_data_handler api
     volumes:
-      - volumes/zksync-data:/zk-sync
+      - zksync-data:/zk-sync
 
   zkstack-apis:
     image: douglasacost/zk-testnet-nodle:latest
@@ -84,4 +84,7 @@ services:
     command: [ "db", "setup" ]
 
 
-
+volumes:
+  zksync-data:
+  postgres-explorer:
+  postgres-zksync:
