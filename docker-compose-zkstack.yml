@@ -35,6 +35,7 @@ services:
       retries: 10
     env_file:
       - ./env/nodle-l2-testnet.env
+      - ./env/private_local.env
     environment:
       DATABASE_URL: postgres://postgres:postgres@postgres-zksync/zksync_local
       DATABASE_PROVER_URL: postgres://postgres:postgres@postgres-zksync/prover_local
@@ -58,6 +59,7 @@ services:
     command: [ "--components", "http_api,ws_api" ]
     env_file:
       - ./env/nodle-l2-testnet.env
+      - ./env/private_local.env
     environment:
       FRI_PROVER_GATEWAY_API_URL: http://zkstack-core:3320
       DATABASE_URL: postgres://postgres:postgres@postgres-zksync/zksync_local
@@ -78,6 +80,7 @@ services:
     restart: on-failure
     env_file:
       - ./env/nodle-l2-testnet.env
+      - ./env/private_local.env
     environment:
       DATABASE_URL: postgres://postgres:postgres@postgres-zksync/zksync_local
       DATABASE_PROVER_URL: postgres://postgres:postgres@postgres-zksync/prover_local
