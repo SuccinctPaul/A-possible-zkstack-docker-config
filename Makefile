@@ -10,5 +10,9 @@ start: ##
 	@docker compose -f docker-compose-NodleCode.yml up -d
 
 
+start_zkstack: ##
+	@docker compose -f docker-compose-zkstack.yml up -d
+
+
 
 .PHONY: clippy fmt test

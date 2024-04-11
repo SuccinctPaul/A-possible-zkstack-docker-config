@@ -1,0 +1,88 @@
+version: '3.2'
+
+services:
+  postgres-zksync:
+    image: postgres:14
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+
+
+  zkstack-core:
+    container_name: zkstack-core
+    image: douglasacost/zk-testnet-nodle:latest
+    command:
+      [
+        "--components",
+        "tree,eth,state_keeper,housekeeper,proof_data_handler"
+      ]
+    depends_on:
+      postgres-zksync:
+        condition: service_healthy
+      zk-postgres-setup:
+        condition: service_completed_successfully
+    restart: always
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3071/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    env_file:
+      - ./env/nodle-l2-testnet.env
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres-zksync/zksync_local
+      DATABASE_PROVER_URL: postgres://postgres:postgres@postgres-zksync/prover_local
+    ports:
+      # assumes default ports in .env
+      #- "3312:3312" # prometheus metrics # we need a separate metrics port for each component
+      - "3320:3320" # proof_data_handler api
+    volumes:
+      - volumes/zksync-data:/zk-sync
+
+  zkstack-apis:
+    image: douglasacost/zk-testnet-nodle:latest
+    depends_on:
+      zkstack-core:
+        condition: service_healthy
+      postgres-zksync:
+        condition: service_healthy
+      zk-postgres-setup:
+        condition: service_completed_successfully
+    restart: always
+    command: [ "--components", "http_api,ws_api" ]
+    env_file:
+      - ./env/nodle-l2-testnet.env
+    environment:
+      FRI_PROVER_GATEWAY_API_URL: http://zkstack-core:3320
+      DATABASE_URL: postgres://postgres:postgres@postgres-zksync/zksync_local
+    ports:
+      # assumes default ports in .env
+      - "3071:3071" # health
+      - "3312:3312" # prometheus metrics # we need a separate metrics port for each component
+      - "3050:3050" # http_api
+      - "3051:3051" # ws_api
+
+  zk-postgres-setup:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.zk-postgres-setup
+    depends_on:
+      postgres-zksync:
+        condition: service_healthy
+    restart: on-failure
+    env_file:
+      - ./env/nodle-l2-testnet.env
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres-zksync/zksync_local
+      DATABASE_PROVER_URL: postgres://postgres:postgres@postgres-zksync/prover_local
+    command: [ "db", "setup" ]
+
+
+
