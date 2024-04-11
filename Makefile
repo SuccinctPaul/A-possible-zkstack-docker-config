@@ -12,6 +12,8 @@ start: ## start docker service
 start_old: ## start docker service
 	@docker compose -f docker-compose-testnet.yml up -d
 
-
+clear: ## clear docker
+	docker compose down --volumes
+	docker compose pull
 
 .PHONY: clippy fmt test
