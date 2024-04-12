@@ -1,7 +1,8 @@
 
 services:
   postgres:
-    image: "postgres:14"
+    container_name: zkstack-postgres
+    image: postgres:14
     ports:
       - "127.0.0.1:5432:5432"
     volumes:
@@ -19,6 +20,7 @@ services:
     restart: unless-stopped
 
   explorer-app:
+    container_name: zkstack-explorer-app
     image: "matterlabs/block-explorer-app"
     ports:
       - '3010:3010'
@@ -29,6 +31,7 @@ services:
       - ./config/explorer-app.config.js:/usr/src/app/packages/app/dist/config.js
     restart: unless-stopped
   explorer-worker:
+    container_name: zkstack-explorer-worker
     image: "matterlabs/block-explorer-worker"
     environment:
       - PORT=3001
@@ -47,6 +50,7 @@ services:
         restart: true
     restart: unless-stopped
   explorer-api:
+    container_name: zkstack-explorer-api
     image: "matterlabs/block-explorer-api"
     environment:
       - PORT=3020
@@ -63,6 +67,7 @@ services:
         restart: true
     restart: unless-stopped
   explorer-data-fetcher:
+    container_name: zkstack-explorer-data-fetcher
     image: "matterlabs/block-explorer-data-fetcher"
     environment:
       - PORT=3040
@@ -84,7 +89,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      zk-postgres-setup:
+      zkstack-postgres-setup:
         condition: service_completed_successfully
     restart: always
     healthcheck:
@@ -106,13 +111,14 @@ services:
       - zksync-data:/zk-sync
 
   zkstack-apis:
+    container_name: zkstack-apis
     image: matterlabs/server-v2:latest2.0
     depends_on:
       zkstack-core:
         condition: service_healthy
       postgres:
         condition: service_healthy
-      zk-postgres-setup:
+      zkstack-postgres-setup:
         condition: service_completed_successfully
     restart: always
     command: [ "--components", "http_api,ws_api" ]
@@ -129,7 +135,8 @@ services:
       - "3050:3050" # http_api
       - "3051:3051" # ws_api
 
-  zk-postgres-setup:
+  zkstack-postgres-setup:
+    container_name: zkstack-postgres-setup
     build:
       context: .
       dockerfile: docker/Dockerfile.zk-postgres-setup
@@ -149,4 +156,3 @@ services:
 volumes:
   zksync-data:
   postgres:
-
