@@ -75,7 +75,7 @@ services:
 
   zkstack-core:
     container_name: zkstack-core
-    image: douglasacost/zk-testnet-nodle:latest
+    image: matterlabs/server-v2:latest2.0
     command:
       [
         "--components",
@@ -106,7 +106,7 @@ services:
       - zksync-data:/zk-sync
 
   zkstack-apis:
-    image: douglasacost/zk-testnet-nodle:latest
+    image: matterlabs/server-v2:latest2.0
     depends_on:
       zkstack-core:
         condition: service_healthy
