@@ -6,15 +6,15 @@ help: ## Display this help screen
 login_db: ## if need use pswd:
 	@psql -h localhost -U postgres
 
-start: ##
+start_explorer: ## start zkstack and explorer
 	@docker compose -f docker-compose-explorer.yml up -d
 
 
-start_zkstack: ##
+start_zkstack: ## start zkstack
 	@docker compose -f docker-compose-zkstack.yml up -d
 
 
-start_zkstack_nodle: ##
+start_zkstack_nodle: ## start zkstack by nodle one
 	@docker compose -f docker-compose-zkstack-nodle.yml up -d
 
 
