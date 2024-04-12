@@ -13,5 +13,9 @@ start_explorer: ## start zkstack and explorer
 start_zkstack: ## start zkstack
 	@docker compose -f docker-compose-zkstack.yml up -d
 
+clear: ## clear docker
+	docker compose down --volumes
+	docker compose pull
+
 
 .PHONY: clippy fmt test
