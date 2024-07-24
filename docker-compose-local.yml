@@ -28,7 +28,7 @@ services:
       explorer-api:
         condition: service_started
     volumes:
-      - ./config/explorer-app.config.js:/usr/src/app/packages/app/dist/config.js
+      - ./config/explorer-app-local.config.js:/usr/src/app/packages/app/dist/config.js
     restart: unless-stopped
   explorer-worker:
     container_name: zkstack-explorer-worker
