@@ -6,10 +6,10 @@ help: ## Display this help screen
 login_db: ## if need use pswd:
 	@psql -h localhost -U postgres
 
-start_explorer_local: ## start explorer
+start_explorer_local: ## start explorer locally
 	@docker compose -f docker-compose-explorer-local.yml up -d
 
-start_explorer_mainnet: ## start explorer
+start_explorer_mainnet: ## start explorer mainnet
 	@docker compose -f docker-compose-explorer-mainnet.yml up -d
 
 
